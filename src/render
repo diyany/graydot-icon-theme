@@ -1,0 +1,243 @@
+#!/usr/bin/env ruby
+
+
+THEME_NAME = 'graydot'
+
+
+## 16x16
+actions_16x16 = {
+  'file_add' => '01',
+  'file_remove' => '01',
+  'file_new' => '01',
+  'file_properties' => '01',
+  'file_save' => '01',
+  'file_save_as' => '01',
+  'file_open' => '01',
+  'file_reload' => '01',
+  'file_stop' => '01',
+  'file_close' => '01',
+  'file_exit' => '02',
+
+  'edit_edit' => '01',
+  'edit_find' => '01',
+  'edit_select_all' => '01',
+  'edit_copy' => '01',
+  'edit_cut' => '01',
+  'edit_paste' => '01',
+  'edit_clear' => '01',
+  'edit_delete' => '01',
+  'edit_undo' => '01',
+  'edit_redo' => '01',
+  'edit_sort_ascending' => '01',
+  'edit_sort_descending' => '01',
+
+  'go_up' => '02',
+  'go_down' => '02',
+  'go_left' => '02',
+  'go_right' => '02',
+  'go_top' => '02',
+  'go_bottom' => '02',
+  'go_first' => '02',
+  'go_last' => '02',
+  'go_jump' => '02',
+  'go_home' => '04',
+
+  'media_play' => '01',
+  'media_next' => '01',
+  'media_previous' => '01',
+  'media_pause' => '01',
+  'media_stop' => '01',
+
+  'view_fullscreen' => '01',
+  'view_nofullscreen' => '01',
+  'view_zoom_in' => '01',
+  'view_zoom_out' => '01',
+  'view_zoom_original' => '01',
+  'view_zoom_fit' => '01',
+
+  'etc_help' => '01',
+  'etc_help_about' => '01',
+  'etc_run' => '01',
+}
+
+
+apps_16x16 = {
+  'help' => '01',
+  'text_editor' => '01',
+}
+
+
+categories_16x16 = {
+  'control_center' => '01',
+}
+
+
+devices_16x16 = {
+  'hard_disk' => '01',
+  'optical_disc' => '01',
+}
+
+
+mimetypes_16x16 = {
+  'file_app' => '01',
+  'file_blender' => '01',
+  'file_database' => '02',
+  'file_key' => '01',
+  'file_key_pub' => '01',
+  'file_torrent' => '01',
+  'file_disc_image' => '01',
+
+  'script' => '01',
+
+  'doc_txt' => '04',
+  'doc_pdf' => '04',
+  'doc_djvu' => '03',
+  'doc_odt' => '01',
+  'doc_ods' => '01',
+  'doc_doc' => '01',
+  'doc_xls' => '01',
+  'doc_html' => '01',
+  'doc_epub' => '06',
+  'doc_fb2' => '01',
+
+  'image' => '01',
+  'image_jpg' => '01',
+  'image_png' => '01',
+  'image_svg' => '01',
+
+  'audio' => '01',
+
+  'video' => '01',
+
+  'pkg' => '01',
+  'pkg_apk' => '02',
+  'pkg_encrypted' => '01',
+  'pkg_rar' => '01',
+}
+
+
+places_16x16 = {
+  'folder' => '01',
+  'folder_home' => '04',
+  'folder_bookmark' => '02',
+  'desktop' => '01',
+  'network_workgroup' => '01',
+  'trash_empty' => '01',
+  'trash_full' => '01',
+}
+
+
+status_16x16 = {
+  'folder_accept' => '01',
+  'folder_open' => '01',
+  'audio_volume_low' => '01',
+  'audio_volume_medium' => '01',
+  'audio_volume_high' => '01',
+  'audio_volume_muted' => '01',
+  'media_repeat' => '01',
+  'media_shuffle' => '01',
+  'msg_info' => '01',
+  'msg_warning' => '01',
+  'network_idle' => '01',
+  'attr_key' => '01',
+}
+
+
+## 32x32
+mimetypes_32x32 = {
+  'file_torrent' => '03',
+
+  'doc_txt' => '01',
+  'doc_pdf' => '01',
+  'doc_epub' => '01',
+  'doc_fb2' => '01',
+
+  'pkg' => '01',
+}
+
+
+## GROUP BY SIZE
+size_16x16 = {
+  'actions' => actions_16x16,
+  'apps' => apps_16x16,
+  'categories' => categories_16x16,
+  'devices' => devices_16x16,
+  'mimetypes' => mimetypes_16x16,
+  'places' => places_16x16,
+  'status' => status_16x16,
+}
+
+
+size_32x32 = {
+  'mimetypes' => mimetypes_32x32,
+}
+
+
+## THEME
+theme = {
+  '16x16' => size_16x16,
+  '32x32' => size_32x32,
+}
+
+
+def check_dir(dir)
+  unless File.directory?(dir)
+    Dir.mkdir(dir)
+  end
+end
+
+
+def run(theme)
+  dir_in = "svg"
+  theme_root = File.expand_path("../#{THEME_NAME}")
+  errors = []
+
+  check_dir(theme_root)
+
+  theme.each do |size, size_in|
+    dir_out = File.join(theme_root, size)
+    check_dir(dir_out)
+
+    if size[/^scalable/]
+      next
+    end
+
+    size_in.each do |cat, cat_in|
+      dir_out = File.join(theme_root, size, cat)
+      check_dir(dir_out)
+
+      puts cat
+
+      cat_in.each do |name, v|
+        file_in = "#{dir_in}/#{size}/#{cat}/#{name}_#{v}.svg"
+
+        if size[/^scalable/]
+          file_out = "#{dir_out}/._#{name}.svg"
+          puts_string = "#{name}.svg ---> ._#{name}.svg"
+          cmd = "cp \"#{file_in}\" \"#{file_out}\""
+        else
+          file_out = "#{dir_out}/._#{name}.png"
+          puts_string = "#{name}.svg ---> ._#{name}.png"
+          cmd = "rsvg-convert \"#{file_in}\" -o \"#{file_out}\""
+        end
+
+        #check_file_exist
+
+        if system cmd
+          puts "OK - " + puts_string
+        else
+          error_string = "!!! ERROR - " + puts_string
+          puts error_string
+          errors << error_string
+        end
+      end
+
+    puts
+    end
+  end
+
+  puts "\nERRORS - #{errors.size}\n" if errors.size > 0
+end
+
+run(theme)
+
